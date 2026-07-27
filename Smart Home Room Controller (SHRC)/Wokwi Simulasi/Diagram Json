@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "author": "VINSENTIUS RIVALDO MANEK",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 19.2, "left": 14.44, "attrs": {} },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 0.3,
+      "left": 234.6,
+      "attrs": { "temperature": "69.1" }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -128,
+      "left": -80.8,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led4",
+      "top": 121.2,
+      "left": -188.2,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led5",
+      "top": 178.8,
+      "left": -178.6,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 157.55,
+      "left": -124.8,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 205.55,
+      "left": -96,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "dht1:VCC", "esp:3V3", "red", [ "v9.6", "h-115.2", "v-105.6", "h-115.2" ] ],
+    [ "dht1:GND", "esp:GND.3", "black", [ "v19.2", "h-144", "v-28.8" ] ],
+    [ "esp:15", "dht1:SDA", "green", [ "v0", "h28.8", "v-57.6", "h115.2" ] ],
+    [ "lcd1:SDA", "esp:21", "green", [ "h-19.2", "v-76.6", "h326.4", "v220.8" ] ],
+    [ "lcd1:SCL", "esp:22", "green", [ "h-19.2", "v-86.1", "h326.4", "v259.2" ] ],
+    [
+      "lcd1:VCC",
+      "esp:5V",
+      "red",
+      [ "h-19.2", "v-67.1", "h316.8", "v249.6", "h-76.8", "v153.6", "h-124.8" ]
+    ],
+    [ "lcd1:GND", "esp:GND.2", "black", [ "h-9.6", "v115.2", "h220.8" ] ],
+    [ "led5:C", "esp:GND.1", "green", [ "v0", "h-9.2", "v-38.4" ] ],
+    [ "led4:C", "esp:GND.1", "green", [ "v9.6", "h-9.2" ] ],
+    [ "esp:12", "r1:2", "green", [ "v0" ] ],
+    [ "r1:1", "led4:A", "green", [ "v0" ] ],
+    [ "esp:13", "r2:2", "green", [ "h-57.45" ] ],
+    [ "r2:1", "led5:A", "green", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
+
+
