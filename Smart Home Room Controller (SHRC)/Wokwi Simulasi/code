@@ -1,0 +1,144 @@
+#define BLYNK_AUTH_TOKEN "Yrc5eOcgVXVfnCslnlYYRUv_FeWltrSN"
+#define BLYNK_TEMPLATE_ID "TMPL6CZ_fHxP3"
+#define BLYNK_TEMPLATE_NAME "SHRC AC"
+
+
+
+#define BLYNK_PRINT Serial
+
+#define VPIN_SYSTEM V0
+#define VPIN_SETPOINT V1
+#define VPIN_TEMP V2
+
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
+#include <DHT.h>
+#include <LiquidCrystal_I2C.h>
+//#include <IRremoteESP8266.h>
+//#include <IRsend.h>
+
+// ========== WIFI ==========
+char ssid[] = "Wokwi-GUEST";
+char pass[] = "";
+
+// ========== DHT ==========
+#define DHTPIN 15
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// ========== LED ==========
+#define LED_COOL 13
+#define LED_IDLE 12
+
+// ========== LCD ==========
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// ========== VAR ==========
+bool systemON = false;
+float setPoint = 26.0;
+float temperature = 0;
+bool acONState = false;
+
+// ========== BLYNK PIN ==========
+#define VPIN_SYSTEM   V0
+#define VPIN_SETPOINT V1
+#define VPIN_TEMP     V2
+
+BlynkTimer timer;
+
+// ========== BLYNK INPUT ==========
+BLYNK_WRITE(VPIN_SYSTEM) {
+  systemON = param.asInt();
+}
+
+BLYNK_WRITE(VPIN_SETPOINT) {
+  setPoint = param.asFloat();
+}
+
+// ========== AC SIMULASI ==========
+void acON() {
+  if (!acONState) {
+    acONState = true;
+    Serial.println("AC ON (SIMULASI)");
+  }
+}
+
+void acOFF() {
+  if (acONState) {
+    acONState = false;
+    Serial.println("AC OFF (SIMULASI)");
+  }
+}
+
+// ========== LOGIKA UTAMA ==========
+void controlSHRC() {
+  temperature = dht.readTemperature();
+  if (isnan(temperature)) return;
+
+  Blynk.virtualWrite(VPIN_TEMP, temperature);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Temp:");
+  lcd.print(temperature);
+  lcd.print("C");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Set:");
+  lcd.print(setPoint);
+
+  // RESET LED
+  digitalWrite(LED_COOL, LOW);
+  digitalWrite(LED_IDLE, LOW);
+
+  // ===== SYSTEM OFF =====
+  if (!systemON) {
+    acOFF();
+    lcd.setCursor(11, 1);
+    lcd.print("OFF ");
+    return;
+  }
+
+  // ===== CONTROL =====
+  if (temperature > setPoint + 0.5) {
+    acON();
+    digitalWrite(LED_COOL, HIGH);
+    lcd.setCursor(11, 1);
+    lcd.print("COOL");
+  }
+  else if (temperature < setPoint - 0.5) {
+    acOFF();
+    digitalWrite(LED_IDLE, HIGH);
+    lcd.setCursor(11, 1);
+    lcd.print("COLD");
+  }
+  else {
+     digitalWrite(LED_COOL, LOW);
+    digitalWrite(LED_IDLE, LOW);
+    lcd.setCursor(11, 1);
+    lcd.print("OK  ");
+  }
+}
+
+// ========== SETUP ==========
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(LED_COOL, OUTPUT);
+  pinMode(LED_IDLE, OUTPUT);
+
+  dht.begin();
+  lcd.init();
+  lcd.backlight();
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  timer.setInterval(3000L, controlSHRC);
+}
+
+// ========== LOOP ==========
+void loop() {
+  Blynk.run();
+  timer.run();
+}
